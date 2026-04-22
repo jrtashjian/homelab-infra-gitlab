@@ -1,0 +1,5 @@
+- hosts: gitlab-runner
+  become: true
+  tasks:
+    - name: Prune Docker system
+      ansible.builtin.command: docker system prune --all --force
