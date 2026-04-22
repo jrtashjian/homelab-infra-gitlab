@@ -1,0 +1,5 @@
+gitlab_domain: gitlab.int.jrtashjian.com
+gitlab_external_url: "https://{{ gitlab_domain }}/"
+
+cluster_ssl_certificate: "{{ inventory_dir }}/files/fullchain.pem"
+cluster_ssl_certificate_key: "{{ inventory_dir }}/files/privkey.pem"

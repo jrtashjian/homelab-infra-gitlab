@@ -1,0 +1,47 @@
+ansible_become_pass: {{ op://homelab/ansible-user/password }}
+ansible_public_key: {{ op://homelab/ansible-ssh/public key }}
+ansible_user: {{ op://homelab/ansible-user/username }}
+
+terraform_user: {{ op://homelab/terraform-user/username }}
+terraform_pass: {{ op://homelab/terraform-user/password }}
+
+smtp_host: {{ op://homelab/smtp_server/server }}
+smtp_port: {{ op://homelab/smtp_server/SMTP/port number }}
+smtp_user: {{ op://homelab/smtp_server/username }}
+smtp_pass: {{ op://homelab/smtp_server/password }}
+
+minio_endpoint: "truenas.int.jrtashjian.com:30320"
+minio_access_key_id: {{ op://homelab/minio-admin-user/Access Keys/access key }}
+minio_secret_access_key: {{ op://homelab/minio-admin-user/Access Keys/secret access key }}
+
+gitlab_runner_registration_token: {{ op://homelab/gitlab-admin-user/Personal Access Tokens/create-runner-automation }}
+
+gitlab_omniauth_providers: |
+  [
+    {
+      name: "github",
+      app_id: "{{ op://homelab/github-omniauth-provider/username }}",
+      app_secret: "{{ op://homelab/github-omniauth-provider/credential }}",
+      args: { scope: "user:email" }
+    },
+    {
+      name: 'openid_connect',
+      label: 'sso.jrtashjian.com',
+      args: {
+        name: 'openid_connect',
+        scope: ['openid','profile','email'],
+        response_type: 'code',
+        issuer: 'https://sso.jrtashjian.com/application/o/gitlab/',
+        discovery: true,
+        client_auth_method: 'query',
+        uid_field: 'preferred_username',
+        send_scope_to_token_endpoint: 'true',
+        pkce: true,
+        client_options: {
+          identifier: "{{ op://homelab/gitlab-admin-user/authentik/client_id }}",
+          secret: "{{ op://homelab/gitlab-admin-user/authentik/client_secret }}",
+          redirect_uri: 'https://gitlab.int.jrtashjian.com/users/auth/openid_connect/callback'
+        }
+      }
+    }
+  ]

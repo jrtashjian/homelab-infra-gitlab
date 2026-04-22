@@ -1,0 +1,16 @@
+gitlab:
+  hosts:
+    gitlab-trixie.int.jrtashjian.com:
+
+gitlab-runner:
+  hosts:
+    gitlab-runner01.int.jrtashjian.com:
+    gitlab-runner02.int.jrtashjian.com:
+    gitlab-runner01-large.int.jrtashjian.com:
+      gitlab_runner_tags:
+        - "large"
+      gitlab_runner_run_untagged: "false"
+    gitlab-runner02-large.int.jrtashjian.com:
+      gitlab_runner_tags:
+        - "large"
+      gitlab_runner_run_untagged: "false"
