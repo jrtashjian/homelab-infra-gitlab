@@ -1,0 +1,15 @@
+.env
+
+# Terraform files
+*.tfstate
+*.tfstate.backup
+*.tfplan
+
+# Terraform directories
+.terraform/
+
+# Ansible files
+.ansible-vault-password
+ansible_collections/
+cache/
+vault.yml
