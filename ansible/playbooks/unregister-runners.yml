@@ -1,0 +1,55 @@
+- hosts: gitlab-runner
+  become: true
+  tasks:
+    - name: Check if GitLab Runner is already registered.
+      ansible.builtin.stat: path=/etc/gitlab-runner/config.toml
+      register: gitlab_runner_config
+
+    - name: Report registration status
+      ansible.builtin.debug:
+        msg: "{{ ansible_hostname }} is {{ 'registered' if gitlab_runner_config.stat.exists else 'not registered' }}"
+
+    - name: Extract runner details
+      ansible.builtin.shell: grep '{{ item }}.=' /etc/gitlab-runner/config.toml | awk -F '"' '{print $2}'
+      loop:
+        - name
+        - token
+      register: runner_details
+      when: gitlab_runner_config.stat.exists
+
+    - name: Extract the first runner's name and token
+      ansible.builtin.set_fact:
+        runner_name: "{{ runner_details.results[0].stdout }}"
+        runner_token: "{{ runner_details.results[1].stdout }}"
+      when: runner_details.results | length > 0 and gitlab_runner_config.stat.exists
+
+    - name: Unregister GitLab Runner with GitLab instance.
+      ansible.builtin.command: >
+        gitlab-runner unregister
+        --url {{ gitlab_external_url }}
+        --token {{ runner_token }}
+      when: gitlab_runner_config.stat.exists
+
+    - name: Unregister GitLab Runner via GitLab API
+      ansible.builtin.uri:
+        url: "{{ gitlab_external_url }}api/v4/runners"
+        method: DELETE
+        body_format: form-urlencoded
+        body:
+          token: "{{ runner_token }}"
+        status_code: 204
+      when: gitlab_runner_config.stat.exists
+
+    - name: Stop GitLab Runner service
+      ansible.builtin.systemd:
+        name: gitlab-runner
+        state: stopped
+      when: gitlab_runner_config.stat.exists
+
+    - name: Delete GitLab Runner configuration directory and temporary file.
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/gitlab-runner
+      when: gitlab_runner_config.stat.exists
