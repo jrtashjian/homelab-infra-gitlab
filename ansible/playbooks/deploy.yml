@@ -1,0 +1,12 @@
+# - hosts: gitlab
+#   roles:
+#     - role: ssl-certs
+#       ssl_cert_dir: /etc/gitlab/certs
+#     - gitlab
+#   become: true
+
+- hosts: gitlab-runner
+  roles:
+    - docker
+    - gitlab-runner
+  become: true

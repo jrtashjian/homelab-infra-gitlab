@@ -1,0 +1,83 @@
+- name: Check if Docker is already installed.
+  ansible.builtin.stat: path=/usr/bin/docker
+  register: docker_file
+
+- name: Check if Docker repository is already installed.
+  ansible.builtin.stat: path=/etc/apt/sources.list.d/docker.sources
+  register: docker_repo
+
+- name: Set fact for forcing repository installation
+  ansible.builtin.set_fact:
+    docker_force_repo_install: "{{ 'docker-repo-install' in ansible_run_tags }}"
+
+- name: Install required dependencies.
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+    state: present
+  when: not docker_file.stat.exists
+
+- name: Create Docker keyrings directory.
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+  when: not docker_repo.stat.exists or docker_force_repo_install
+  tags: docker-repo-install
+
+- name: Download Docker GPG key.
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/debian/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: "0644"
+  when: not docker_repo.stat.exists or docker_force_repo_install
+  tags: docker-repo-install
+
+- name: Set permissions on Docker GPG key.
+  ansible.builtin.file:
+    path: /etc/apt/keyrings/docker.asc
+    mode: "a+r"
+  when: not docker_repo.stat.exists or docker_force_repo_install
+  tags: docker-repo-install
+
+- name: Add Docker package source.
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/docker.sources
+    content: |
+      Types: deb
+      URIs: https://download.docker.com/linux/debian
+      Suites: {{ ansible_distribution_release }}
+      Components: stable
+      Signed-By: /etc/apt/keyrings/docker.asc
+    mode: "0644"
+  when: not docker_repo.stat.exists or docker_force_repo_install
+  tags: docker-repo-install
+
+- name: Update apt cache.
+  ansible.builtin.apt:
+    update_cache: true
+  when: not docker_repo.stat.exists or docker_force_repo_install
+  tags: docker-repo-install
+
+- name: Install Docker components.
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: latest
+
+- name: Enable Docker service at boot.
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Ensure ansible user has Docker privileges.
+  ansible.builtin.user:
+    append: yes
+    groups: "docker"
+    name: "{{ ansible_user }}"
