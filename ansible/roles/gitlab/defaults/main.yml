@@ -1,0 +1,14 @@
+gitlab_domain: "gitlab.example.com"
+gitlab_external_url: "http://{{ gitlab_domain }}/"
+
+# SSL Configuration.
+gitlab_redirect_http_to_https: false
+gitlab_ssl_certificate: "/etc/gitlab/ssl/{{ gitlab_domain }}.crt"
+gitlab_ssl_certificate_key: "/etc/gitlab/ssl/{{ gitlab_domain }}.key"
+
+gitlab_omniauth_providers: ""
+gitlab_object_store_connection: ""
+gitlab_ldap_servers: ""
+gitlab_smtp:
+gitlab_registry_storage: ""
+gitlab_upgrade_version: ""
