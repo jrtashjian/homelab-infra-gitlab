@@ -1433,7 +1433,7 @@ registry['storage'] = {{ gitlab_registry_storage }}
 ###! GitLab defaults: https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/memory/watchdog/configurator.rb
 # puma['per_worker_max_memory_mb'] = 1500
 
-# puma['exporter_enabled'] = false
+puma['exporter_enabled'] = false
 # puma['exporter_address'] = "127.0.0.1"
 # puma['exporter_port'] = 8083
 # puma['exporter_tls_enabled'] = false
@@ -1478,7 +1478,7 @@ registry['storage'] = {{ gitlab_registry_storage }}
 # sidekiq['queue_groups'] = ['*']
 
 ##! Specifies where Prometheus metrics endpoints should be made available for Sidekiq processes.
-# sidekiq['metrics_enabled'] = true
+sidekiq['metrics_enabled'] = false
 # sidekiq['exporter_log_enabled'] = false
 # sidekiq['exporter_tls_enabled'] = false
 # sidekiq['exporter_tls_cert_path'] = ""
@@ -2316,7 +2316,7 @@ nginx['ssl_certificate_key'] = "{{ gitlab_ssl_certificate_key }}"
 
 ##! Settings for GitLab KAS
 # gitlab_kas_external_url "ws://gitlab.example.com/-/kubernetes-agent/"
-# gitlab_kas['enable'] = true
+gitlab_kas['enable'] = false
 
 ##! Agent configuration for GitLab KAS
 # gitlab_kas['agent_configuration_poll_period'] = 300
@@ -2516,7 +2516,7 @@ registry_nginx['ssl_certificate_key'] = "{{ gitlab_ssl_certificate_key }}"
 ###!   the line below.**
 # monitoring_role['enable'] = true
 
-# prometheus['enable'] = true
+prometheus['enable'] = false
 # prometheus['monitor_kubernetes'] = true
 # prometheus['username'] = 'gitlab-prometheus'
 # prometheus['group'] = 'gitlab-prometheus'
@@ -2595,7 +2595,7 @@ registry_nginx['ssl_certificate_key'] = "{{ gitlab_ssl_certificate_key }}"
 ## Prometheus Alertmanager
 ################################################################################
 
-# alertmanager['enable'] = true
+alertmanager['enable'] = false
 # alertmanager['home'] = '/var/opt/gitlab/alertmanager'
 # alertmanager['log_directory'] = '/var/log/gitlab/alertmanager'
 # alertmanager['log_group'] = nil
@@ -2620,7 +2620,7 @@ registry_nginx['ssl_certificate_key'] = "{{ gitlab_ssl_certificate_key }}"
 ##! Docs: https://docs.gitlab.com/ee/administration/monitoring/prometheus/node_exporter.html
 ################################################################################
 
-# node_exporter['enable'] = true
+node_exporter['enable'] = false
 # node_exporter['home'] = '/var/opt/gitlab/node-exporter'
 # node_exporter['log_directory'] = '/var/log/gitlab/node-exporter'
 # node_exporter['log_group'] = nil
@@ -2646,7 +2646,7 @@ registry_nginx['ssl_certificate_key'] = "{{ gitlab_ssl_certificate_key }}"
 ##! Docs: https://docs.gitlab.com/ee/administration/monitoring/prometheus/redis_exporter.html
 ################################################################################
 
-# redis_exporter['enable'] = true
+redis_exporter['enable'] = false
 # redis_exporter['log_directory'] = '/var/log/gitlab/redis-exporter'
 # redis_exporter['log_group'] = nil
 # redis_exporter['flags'] = {
@@ -2674,7 +2674,7 @@ registry_nginx['ssl_certificate_key'] = "{{ gitlab_ssl_certificate_key }}"
 ##! Docs: https://docs.gitlab.com/ee/administration/monitoring/prometheus/postgres_exporter.html
 ################################################################################
 
-# postgres_exporter['enable'] = true
+postgres_exporter['enable'] = false
 # postgres_exporter['home'] = '/var/opt/gitlab/postgres-exporter'
 # postgres_exporter['log_directory'] = '/var/log/gitlab/postgres-exporter'
 # postgres_exporter['log_group'] = nil
@@ -2715,7 +2715,7 @@ registry_nginx['ssl_certificate_key'] = "{{ gitlab_ssl_certificate_key }}"
 ##! Docs: https://docs.gitlab.com/ee/administration/monitoring/prometheus/gitlab_exporter.html
 ################################################################################
 
-# gitlab_exporter['enable'] = true
+gitlab_exporter['enable'] = false
 # gitlab_exporter['log_directory'] = "/var/log/gitlab/gitlab-exporter"
 # gitlab_exporter['log_group'] = nil
 # gitlab_exporter['home'] = "/var/opt/gitlab/gitlab-exporter"
@@ -2754,7 +2754,7 @@ registry_nginx['ssl_certificate_key'] = "{{ gitlab_ssl_certificate_key }}"
 # gitlab_exporter['extra_config_command'] = nil
 
 ##! To completely disable prometheus, and all of it's exporters, set to false
-# prometheus_monitoring['enable'] = true
+prometheus_monitoring['enable'] = false
 
 ################################################################################
 ## Gitaly
