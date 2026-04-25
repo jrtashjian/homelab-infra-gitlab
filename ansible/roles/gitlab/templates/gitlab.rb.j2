@@ -318,7 +318,7 @@ gitlab_rails['gitlab_email_display_name'] = 'GitLab'
 ###! Allow users to comment on issues and merge requests by replying to
 ###! notification emails.
 ###! Docs: https://docs.gitlab.com/ee/administration/reply_by_email.html
-# gitlab_rails['incoming_email_enabled'] = true
+gitlab_rails['incoming_email_enabled'] = false
 
 ### Incoming Email Address
 ###! The email address including the `%{key}` placeholder that will be replaced
@@ -2093,7 +2093,7 @@ nginx['ssl_certificate_key'] = "{{ gitlab_ssl_certificate_key }}"
 
 ##! Define to enable GitLab Pages
 # pages_external_url "http://pages.example.com/"
-# gitlab_pages['enable'] = false
+gitlab_pages['enable'] = false
 
 ##! Configure to expose GitLab Pages on external IP address, serving the HTTP
 # gitlab_pages['external_http'] = []
@@ -2423,7 +2423,7 @@ gitlab_kas['enable'] = false
 
 # mattermost_external_url 'http://mattermost.example.com'
 
-# mattermost['enable'] = false
+mattermost['enable'] = false
 # mattermost['username'] = 'mattermost'
 # mattermost['group'] = 'mattermost'
 # mattermost['uid'] = nil
@@ -3624,7 +3624,7 @@ letsencrypt['enable'] = false
 ###! Allow users to create new service desk issues by sending an email to
 ###! service desk address.
 ###! Docs: https://docs.gitlab.com/ee/user/project/service_desk/index.html
-# gitlab_rails['service_desk_email_enabled'] = false
+gitlab_rails['service_desk_email_enabled'] = false
 
 #### Service Desk Mailbox Settings (via `mail_room`)
 #### Service Desk Email Address
@@ -3677,7 +3677,7 @@ letsencrypt['enable'] = false
 ## Spamcheck (EE only)
 #################################################################################
 
-# spamcheck['enable'] = false
+spamcheck['enable'] = false
 # spamcheck['dir'] = '/var/opt/gitlab/spamcheck'
 # spamcheck['port'] = 8001
 # spamcheck['external_port'] = nil
