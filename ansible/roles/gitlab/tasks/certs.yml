@@ -1,0 +1,19 @@
+- name: Create SSL certificate directory
+  ansible.builtin.file:
+    path: "/etc/gitlab/ssl/"
+    state: directory
+    mode: '0755'
+
+- name: Create SSL certificate
+  ansible.builtin.copy:
+    src: "{{ cluster_ssl_certificate }}"
+    dest: "/etc/gitlab/ssl/{{ gitlab_domain }}.crt"
+    mode: '0644'
+    force: true
+
+- name: Create SSL certificate key
+  ansible.builtin.copy:
+    src: "{{ cluster_ssl_certificate_key }}"
+    dest: "/etc/gitlab/ssl/{{ gitlab_domain }}.key"
+    mode: '0644'
+    force: true

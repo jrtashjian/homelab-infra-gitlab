@@ -1882,9 +1882,9 @@ sidekiq['metrics_enabled'] = false
 ##! Docs: https://docs.gitlab.com/omnibus/settings/nginx.html
 ################################################################################
 
-# nginx['enable'] = true
+nginx['enable'] = true
 # nginx['client_max_body_size'] = '0'
-nginx['redirect_http_to_https'] = {{ gitlab_redirect_http_to_https | lower }}
+nginx['redirect_http_to_https'] = true
 # nginx['redirect_http_to_https_port'] = 80
 
 ##! Most root CA's are included by default
@@ -1896,8 +1896,8 @@ nginx['redirect_http_to_https'] = {{ gitlab_redirect_http_to_https | lower }}
 ##! if ssl_verify_client on, verification depth in the client certificates chain
 # nginx['ssl_verify_depth'] = "1"
 
-nginx['ssl_certificate'] = "{{ gitlab_ssl_certificate }}"
-nginx['ssl_certificate_key'] = "{{ gitlab_ssl_certificate_key }}"
+nginx['ssl_certificate'] = "/etc/gitlab/ssl/{{ gitlab_domain }}.crt"
+nginx['ssl_certificate_key'] = "/etc/gitlab/ssl/{{ gitlab_domain }}.key"
 # nginx['ssl_ciphers'] = "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384"
 # nginx['ssl_prefer_server_ciphers'] = "off"
 
@@ -2491,9 +2491,9 @@ mattermost['enable'] = false
 ##! `registry_nginx['some_setting']` and should be set separately.
 
 ##! Below you can find settings that are exclusive to "Registry NGINX"
-# registry_nginx['enable'] = false
-registry_nginx['ssl_certificate'] = "{{ gitlab_ssl_certificate }}"
-registry_nginx['ssl_certificate_key'] = "{{ gitlab_ssl_certificate_key }}"
+registry_nginx['enable'] = true
+registry_nginx['ssl_certificate'] = "/etc/gitlab/ssl/{{ gitlab_domain }}.crt"
+registry_nginx['ssl_certificate_key'] = "/etc/gitlab/ssl/{{ gitlab_domain }}.key"
 
 # registry_nginx['proxy_set_headers'] = {
 #  "Host" => "$http_host",
