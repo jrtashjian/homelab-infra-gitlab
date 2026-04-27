@@ -6,10 +6,6 @@
   ansible.builtin.stat: path=/etc/apt/sources.list.d/docker.sources
   register: docker_repo
 
-- name: Set fact for forcing repository installation
-  ansible.builtin.set_fact:
-    docker_force_repo_install: "{{ 'docker-repo-install' in ansible_run_tags }}"
-
 - name: Install required dependencies.
   ansible.builtin.apt:
     name:
@@ -23,23 +19,20 @@
     path: /etc/apt/keyrings
     state: directory
     mode: "0755"
-  when: not docker_repo.stat.exists or docker_force_repo_install
-  tags: docker-repo-install
+  when: not docker_repo.stat.exists
 
 - name: Download Docker GPG key.
   ansible.builtin.get_url:
     url: https://download.docker.com/linux/debian/gpg
     dest: /etc/apt/keyrings/docker.asc
     mode: "0644"
-  when: not docker_repo.stat.exists or docker_force_repo_install
-  tags: docker-repo-install
+  when: not docker_repo.stat.exists
 
 - name: Set permissions on Docker GPG key.
   ansible.builtin.file:
     path: /etc/apt/keyrings/docker.asc
     mode: "a+r"
-  when: not docker_repo.stat.exists or docker_force_repo_install
-  tags: docker-repo-install
+  when: not docker_repo.stat.exists
 
 - name: Add Docker package source.
   ansible.builtin.copy:
@@ -51,14 +44,12 @@
       Components: stable
       Signed-By: /etc/apt/keyrings/docker.asc
     mode: "0644"
-  when: not docker_repo.stat.exists or docker_force_repo_install
-  tags: docker-repo-install
+  when: not docker_repo.stat.exists
 
 - name: Update apt cache.
   ansible.builtin.apt:
     update_cache: true
-  when: not docker_repo.stat.exists or docker_force_repo_install
-  tags: docker-repo-install
+  when: not docker_repo.stat.exists
 
 - name: Install Docker components.
   ansible.builtin.apt:
