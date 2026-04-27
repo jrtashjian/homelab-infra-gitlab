@@ -1,6 +1,6 @@
 # Docker Ansible Role
 
-This Ansible role installs Docker CE on Debian-based systems from the official Docker APT repository. It conditionally sets up the repository and dependencies only on initial installation (via `stat` checks), installs latest package versions, enables the Docker service, and grants the `ansible_user` Docker group privileges. This enables DinD support for the GitLab Runner role. Docker pruning is handled by the separate `docker-prune.yml` playbook.
+This Ansible role installs Docker CE on Debian-based systems from the official Docker APT repository. It conditionally sets up the repository and dependencies only on initial installation (via `stat` checks), installs latest package versions, enables the Docker service, and grants the `ansible_user` Docker group privileges. This enables DinD support for the GitLab Runner role.
 
 ## Role Variables
 

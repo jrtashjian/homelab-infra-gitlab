@@ -1,6 +1,6 @@
 # GitLab Runner Ansible Role
 
-This Ansible role installs GitLab Runner on Debian-based systems from the official GitLab APT repository and provisions a TOML configuration template for the Docker executor. The template integrates S3 caching against a MinIO instance (using the `gitlab-runners-cache` bucket) and mounts the Docker socket for DinD support. Runner registration, service management, and Docker pruning are handled by separate playbooks (`register-runners.yml`, `unregister-runners.yml`, `docker-prune.yml`).
+This Ansible role installs GitLab Runner on Debian-based systems from the official GitLab APT repository and provisions a TOML configuration template for the Docker executor. The template integrates S3 caching against a MinIO instance (using the `gitlab-runners-cache` bucket) and mounts the Docker socket for DinD support.
 
 ## Role Variables
 
