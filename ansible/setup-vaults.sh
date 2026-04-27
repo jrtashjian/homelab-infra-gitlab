@@ -45,6 +45,10 @@ fetch_1password_item() {
 
 fetch_1password_item "op://homelab/ansible-user/Credentials/.ansible-vault-password" ".ansible-vault-password"
 
+mkdir -p files
+fetch_1password_item "op://homelab/int.jrtashjian.com.fullchain/int.jrtashjian.com.fullchain.pem" "files/int.jrtashjian.com.crt"
+fetch_1password_item "op://homelab/int.jrtashjian.com.privkey/int.jrtashjian.com.privkey.pem" "files/int.jrtashjian.com.key"
+
 vault_files=(
     "group_vars/all/vault.yml"
 )

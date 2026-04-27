@@ -1,5 +1,3 @@
-gitlab_ssl_certificate: "/etc/gitlab/certs/fullchain.pem"
-gitlab_ssl_certificate_key: "/etc/gitlab/certs/privkey.pem"
 
 gitlab_smtp:
   address: "{{ smtp_host }}"
