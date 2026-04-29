@@ -1,0 +1,171 @@
+- name: Generate SSH migration key on localhost
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Generate migration SSH keypair on controller
+      command: ssh-keygen -t rsa -b 4096 -f /tmp/id_gitlab_migrate -N '' -C 'GitLab migration (old -> new)'
+      args:
+        creates: /tmp/id_gitlab_migrate
+
+    - name: Set permissions on private key
+      file:
+        path: /tmp/id_gitlab_migrate
+        mode: '0600'
+
+    - name: Set permissions on public key
+      file:
+        path: /tmp/id_gitlab_migrate.pub
+        mode: '0644'
+
+
+- name: Prepare new GitLab host for data migration
+  hosts: gitlab
+  become: true
+  tasks:
+    - name: Install rsync on new host
+      ansible.builtin.apt:
+        state: present
+        package:
+          - rsync
+
+    - name: Ensure root SSH directory
+      file:
+        path: /root/.ssh
+        state: directory
+        owner: root
+        group: root
+        mode: '0700'
+
+    - name: Authorize migration key for root login
+      authorized_key:
+        user: root
+        key: "{{ lookup('file', '/tmp/id_gitlab_migrate.pub') }}"
+        state: present
+        comment: 'Temporary key for GitLab migration from old host'
+
+    - name: Ensure GitLab is started on new host
+      command: gitlab-ctl start
+      ignore_errors: true
+      changed_when: false
+
+
+- name: Stop services and rsync data from old host to new host
+  hosts: gitlab-old
+  become: true
+  vars:
+    new_gitlab_host: "{{ groups['gitlab'][0] }}"
+  tasks:
+    - name: Install rsync on old host
+      ansible.builtin.apt:
+        state: present
+        package:
+          - rsync
+
+    - name: Copy private migration key to old host
+      copy:
+        src: /tmp/id_gitlab_migrate
+        dest: /root/.ssh/id_gitlab_migrate
+        mode: '0600'
+        owner: root
+        group: root
+
+    - name: Flush Redis database to disk on old host
+      command: /opt/gitlab/embedded/bin/redis-cli -s /var/opt/gitlab/redis/redis.socket save
+
+    - name: Stop GitLab services on old host
+      command: gitlab-ctl stop
+      ignore_errors: true
+      changed_when: false
+
+    - name: Start PostgreSQL and Gitaly on old host
+      command: gitlab-ctl start {{ item }}
+      loop:
+        - postgresql
+        - gitaly
+
+    - name: Create GitLab backup on old host
+      command: gitlab-backup create
+
+    - name: Stop GitLab remaining services on old host
+      command: gitlab-ctl stop
+      ignore_errors: true
+      changed_when: false
+
+    - name: Synchronize GitLab data to new host
+      synchronize:
+        src: "{{ item.src }}"
+        dest: "root@192.168.10.76:{{ item.dest }}"
+        archive: yes
+        compress: yes
+        delete: yes
+        rsync_opts:
+          - "--no-motd"
+          - "--checksum"
+        _ssh_args: "-i /root/.ssh/id_gitlab_migrate -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes"
+      delegate_to: "{{ inventory_hostname }}"
+      loop:
+        - { src: '/etc/ssh/', dest: '/etc/ssh/' }
+        - { src: '/etc/gitlab/', dest: '/etc/gitlab/' }
+        - { src: '/var/opt/gitlab/redis/dump.rdb', dest: '/var/opt/gitlab/redis/' }
+        - { src: "/var/opt/gitlab/backups/", dest: '/var/opt/gitlab/backups/' }
+
+    - name: Cleanup private key on old host
+      file:
+        path: /root/.ssh/id_gitlab_migrate
+        state: absent
+
+
+- name: Finalize configuration and start GitLab on new host
+  hosts: gitlab
+  become: true
+  tasks:
+    - name: Restart SSH after restoring host keys
+      service:
+        name: ssh
+        state: restarted
+
+    - name: Stop Puma and Sidekiq on new host before restore
+      command: gitlab-ctl stop {{ item }}
+      loop:
+        - puma
+        - sidekiq
+
+    - name: Get latest GitLab backup
+      shell: ls -1t /var/opt/gitlab/backups | head -n1
+      register: latest_backup
+      changed_when: false
+
+    - name: Restore GitLab backup on new host
+      command: gitlab-backup restore BACKUP={{ latest_backup.stdout | replace('_gitlab_backup.tar', '') }} force=yes
+
+    - name: Reconfigure GitLab
+      command: gitlab-ctl reconfigure
+      changed_when: true
+
+    - name: Start GitLab services on new host
+      command: gitlab-ctl start
+
+    - name: Check GitLab secrets on new host
+      command: gitlab-rake gitlab:doctor:secrets
+      register: secrets_check
+      failed_when: secrets_check.rc != 0
+
+    - name: Analyze PostgreSQL database on new host
+      command: gitlab-psql -c 'SET statement_timeout = 0; ANALYZE VERBOSE;'
+
+    - name: Remove migration public key from new host
+      authorized_key:
+        user: root
+        key: "{{ lookup('file', '/tmp/id_gitlab_migrate.pub') }}"
+        state: absent
+
+    - name: Cleanup temporary files
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /tmp/id_gitlab_migrate
+        - /tmp/id_gitlab_migrate.pub
+      delegate_to: localhost
+      become: false
