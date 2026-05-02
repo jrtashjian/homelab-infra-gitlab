@@ -1,14 +1,24 @@
 - hosts: gitlab-runner
   become: true
   tasks:
-    - name: Check if GitLab Runner is already registered.
+    - name: Check if GitLab Runner config exists.
       ansible.builtin.stat: path=/etc/gitlab-runner/config.toml
       register: gitlab_runner_config
 
+    - name: Check if token runner detail exists in config.toml
+      ansible.builtin.command: grep -q 'token =' /etc/gitlab-runner/config.toml
+      register: runner_token_check
+      changed_when: false
+      failed_when: false
+      when: gitlab_runner_config.stat.exists
+
+    - name: Determine if runner is registered
+      ansible.builtin.set_fact:
+        runner_registered: "{{ gitlab_runner_config.stat.exists and runner_token_check.rc == 0 }}"
+
     - name: Report registration status
       ansible.builtin.debug:
-        msg: "{{ ansible_hostname }} is {{ 'registered' if gitlab_runner_config.stat.exists else 'not registered' }}"
-      when: not gitlab_runner_config.stat.exists
+        msg: "{{ ansible_hostname }} is {{ 'registered' if runner_registered else 'not registered' }}"
 
     - name: Create GitLab Runner via GitLab API
       ansible.builtin.uri:
@@ -24,7 +34,7 @@
           run_untagged: "{{ gitlab_runner_run_untagged | default('true') }}"
         status_code: 201
       register: register_response
-      when: not gitlab_runner_config.stat.exists
+      when: not runner_registered
 
     - name: Register GitLab Runner with GitLab instance.
       ansible.builtin.command: >
@@ -36,9 +46,10 @@
         --name {{ ansible_hostname }}
         --executor docker
         --docker-image alpine:latest
-      when: not gitlab_runner_config.stat.exists
+      when: not runner_registered
 
     - name: Start GitLab Runner service
       ansible.builtin.systemd:
         name: gitlab-runner
         state: started
+      when: not runner_registered
