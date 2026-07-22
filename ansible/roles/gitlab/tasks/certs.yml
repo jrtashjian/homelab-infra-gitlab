@@ -10,6 +10,7 @@
     dest: "/etc/gitlab/ssl/{{ gitlab_domain }}.crt"
     mode: '0644'
     force: true
+  notify: restart gitlab
 
 - name: Create SSL certificate key
   ansible.builtin.copy:
